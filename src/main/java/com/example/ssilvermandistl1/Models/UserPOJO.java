@@ -2,6 +2,9 @@ package com.example.ssilvermandistl1.Models;
 
 import com.example.ssilvermandistl1.Controllers.BLL;
 import com.example.ssilvermandistl1.Repositories.VideoGameRepository;
+import com.example.ssilvermandistl1.Views.JSONViews;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Data;
 import net.minidev.json.annotate.JsonIgnore;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,19 +23,27 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 public class UserPOJO extends RepresentationModel<UserPOJO> {
 
 
+    @JsonView(JSONViews.OfferView.class)
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Id
     private int id;
+    @JsonView(JSONViews.OfferView.class)
     private String name;
+    @JsonView(JSONViews.OfferView.class)
     private String email;
+    @JsonView(JSONViews.OfferView.class)
     private String streetAddress;
+    @JsonView(JSONViews.OfferView.class)
     private String password;
+    @JsonView(JSONViews.OfferView.class)
     @JsonIgnore
     @OneToMany(mappedBy = "gameOwner")
     private List<VideoGamePOJO> gameList = new ArrayList<>();
+//    @JsonView(JSONViews.OfferView.class)
     @JsonIgnore
     @OneToMany(mappedBy = "offeringUser")
     private List<Offers> offerListIn = new ArrayList<>();
+//    @JsonView(JSONViews.OfferView.class)
     @JsonIgnore
     @OneToMany(mappedBy = "receivingUser")
     private List<Offers> offerListOut = new ArrayList<>();
@@ -41,68 +52,11 @@ public class UserPOJO extends RepresentationModel<UserPOJO> {
         this.gameList.add(game);
     }
 
-    public int getId() {
-        return id;
+    public void addOfferIn(Offers offer){
+        this.offerListIn.add(offer);
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getStreetAddress() {
-        return streetAddress;
-    }
-
-    public void setStreetAddress(String streetAddress) {
-        this.streetAddress = streetAddress;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    @JsonIgnore
-    public List<VideoGamePOJO> getGameList() {
-        return gameList;
-    }
-
-    public void setGameList(List<VideoGamePOJO> gameList) {
-        this.gameList = gameList;
-    }
-    @JsonIgnore
-    public List<Offers> getOfferListIn() {
-        return offerListIn;
-    }
-
-    public void setOfferListIn(List<Offers> offerListIn) {
-        this.offerListIn = offerListIn;
-    }
-    @JsonIgnore
-    public List<Offers> getOfferListOut() {
-        return offerListOut;
-    }
-
-    public void setOfferListOut(List<Offers> offerListOut) {
-        this.offerListOut = offerListOut;
+    public void addOfferOut(Offers offer){
+        this.offerListOut.add(offer);
     }
 }

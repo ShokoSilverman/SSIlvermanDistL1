@@ -1,7 +1,11 @@
 package com.example.ssilvermandistl1.Models;
 
+import com.example.ssilvermandistl1.Views.JSONViews;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Data;
 import net.minidev.json.annotate.JsonIgnore;
+import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -9,39 +13,47 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Data
 @Entity
-public class Offers {
+public class Offers extends RepresentationModel<UserPOJO> {
     public enum CurrentState{Pending, Accepted, Rejected}
 
+    @JsonView(JSONViews.OfferView.class)
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
     //*** User requesting for trade
+    @JsonView(JSONViews.OfferView.class)
     @ManyToOne()
-    @JsonIgnore()
+    @JsonIgnore
     private UserPOJO offeringUser;
 
+    @JsonView(JSONViews.OfferView.class)
     @JsonIgnore
     @ManyToMany()
     @JoinTable(name = "offered_videoGames", joinColumns = @JoinColumn(name = "videoGame_id"),inverseJoinColumns = @JoinColumn(name = "offer_id"))
     private List<VideoGamePOJO> offeredVideoGames = new ArrayList<>();
 
     //*** User being asked for a trade
+    @JsonView(JSONViews.OfferView.class)
     @ManyToOne()
     @JsonIgnore()
     private UserPOJO receivingUser;
 
+    @JsonView(JSONViews.OfferView.class)
     @JsonIgnore
     @ManyToMany()
     @JoinTable(name = "requested_videoGames", joinColumns = @JoinColumn(name = "videoGame_id"),inverseJoinColumns = @JoinColumn(name = "offer_id"))
     private List<VideoGamePOJO> requestedVideoGames = new ArrayList<>();
 
+    @JsonView(JSONViews.OfferView.class)
     @Column(nullable = false)
     private CurrentState currentState;
 
 
+    @JsonView(JSONViews.OfferView.class)
     @Column
     private String dateOfferMade;
 

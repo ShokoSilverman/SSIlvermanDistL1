@@ -7,6 +7,8 @@ import com.example.ssilvermandistl1.Models.VideoGamePOJO;
 import com.example.ssilvermandistl1.Repositories.OfferRepository;
 import com.example.ssilvermandistl1.Repositories.UserRepository;
 import com.example.ssilvermandistl1.Repositories.VideoGameRepository;
+import com.example.ssilvermandistl1.Views.JSONViews;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Data;
 import net.minidev.json.annotate.JsonIgnore;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -470,7 +472,8 @@ public class UserAPI {
         return links;
     }
 
-    @JsonIgnore
+//    @JsonView(JSONViews.OfferView.class)
+//    @JsonIgnore
     @Transactional
     @PostMapping(path="/userVer/createOffer", produces = MediaType.APPLICATION_JSON_VALUE)
     public Offers createOffer(HttpServletResponse res, @RequestHeader(value="Authorization") String authorizationHeader, @RequestParam String strOfferList, @RequestParam String strReceiveId, @RequestParam String strReceiveList){
@@ -524,8 +527,32 @@ public class UserAPI {
             return null;
         }
         Offers offer = new Offers(offerUser, offerList, receiveUser, receiveList);
-        //System.out.println(offer);
+//        System.out.println(offer);
+        offerRepo.save(offer);
+        offerUser.addOfferOut(offer);
+        userRepo.save(offerUser);
+        receiveUser.addOfferIn(offer);
+        userRepo.save(receiveUser);
+        //add links
+        for(Link link : generateOfferLinks(offer.getId(), offerUser.getId(), receiveUser.getId(), intOffersList, intReceiveList)){
+            offer.add(link); //puts all the generated links into the game
+        }
         return offer;
+    }
+
+    private ArrayList<Link> generateOfferLinks(int offerId, int offerUserId, int receiveUserId, List<Integer> offerList, List<Integer>  receiveList){
+        ArrayList<Link> links = new ArrayList<>();
+        links.add(Link.of((String.format("http://localhost:8080/offerses/%s", offerId)), "self"));
+        links.add(Link.of((String.format("http://localhost:8080/offerses/%s", offerId)), "offer"));
+        for (int offerGame : offerList){
+            links.add(Link.of((String.format("http://localhost:8080/videoGamePOJOes/%s", offerGame)), "offeredVideoGames"));
+        }
+        for (int receiveGame : receiveList){
+            links.add(Link.of((String.format("http://localhost:8080/videoGamePOJOes/%s", receiveGame)), "offeredVideoGames"));
+        }
+        links.add(Link.of((String.format("http://localhost:8080/userPOJOes/%s", offerUserId)), "offeringUser"));
+        links.add(Link.of((String.format("http://localhost:8080/userPOJOes/%s", receiveUserId)), "receivingUser"));
+        return links;
     }
 
 }
