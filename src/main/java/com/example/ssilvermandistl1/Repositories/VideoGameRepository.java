@@ -6,4 +6,5 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 @RestResource
 public interface VideoGameRepository extends JpaRepository<VideoGamePOJO, Integer> {
+    VideoGamePOJO getFirstById(int id);
 }

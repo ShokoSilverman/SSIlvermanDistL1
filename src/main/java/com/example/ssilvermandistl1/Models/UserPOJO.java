@@ -52,6 +52,10 @@ public class UserPOJO extends RepresentationModel<UserPOJO> {
         this.gameList.add(game);
     }
 
+    public void removeGame(VideoGamePOJO game){
+        this.gameList.remove(game);
+    }
+
     public void addOfferIn(Offers offer){
         this.offerListIn.add(offer);
     }
