@@ -13,7 +13,7 @@ import javax.persistence.*;
 
 @Data
 @Entity
-public class VideoGamePOJO extends RepresentationModel<UserPOJO> {
+public class VideoGamePOJO extends RepresentationModel<VideoGamePOJO> {
 
     public enum GameCondition{MINT, GOOD, FAIR, POOR}
 
@@ -33,7 +33,7 @@ public class VideoGamePOJO extends RepresentationModel<UserPOJO> {
     private GameCondition gameCondition;
     @JsonView(JSONViews.OfferView.class)
     private int previousOwners;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JsonIgnore
     private UserPOJO gameOwner;
 

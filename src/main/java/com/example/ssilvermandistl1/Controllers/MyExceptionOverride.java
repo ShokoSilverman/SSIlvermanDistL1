@@ -20,12 +20,12 @@ public class MyExceptionOverride extends ResponseEntityExceptionHandler {
         MyExceptionMessage myEx = new MyExceptionMessage(ex.getMessage(), 400);
         return new ResponseEntity<MyExceptionMessage>(myEx, new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
-    @ExceptionHandler(RuntimeException.class)
-    public final ResponseEntity<MyExceptionMessage> somethingWentWrongRuntime(RuntimeException ex){
-        System.out.println("somethingWentWrongRuntime()");
-        MyExceptionMessage myEx = new MyExceptionMessage(ex.getMessage(), 418);
-        return new ResponseEntity<MyExceptionMessage>(myEx, new HttpHeaders(), HttpStatus.BAD_REQUEST);
-    }
+//    @ExceptionHandler(RuntimeException.class)
+//    public final ResponseEntity<MyExceptionMessage> somethingWentWrongRuntime(RuntimeException ex){
+//        System.out.println("somethingWentWrongRuntime()");
+//        MyExceptionMessage myEx = new MyExceptionMessage(ex.getMessage(), 418);
+//        return new ResponseEntity<MyExceptionMessage>(myEx, new HttpHeaders(), HttpStatus.BAD_REQUEST);
+//    }
     @ExceptionHandler(KeyAlreadyExistsException.class)
     public final ResponseEntity<MyExceptionMessage> keyExists(RuntimeException ex){
         System.out.println("Key Already Exists");

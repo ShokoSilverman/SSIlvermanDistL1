@@ -37,7 +37,7 @@ public class UserPOJO extends RepresentationModel<UserPOJO> {
     private String password;
     @JsonView(JSONViews.OfferView.class)
     @JsonIgnore
-    @OneToMany(mappedBy = "gameOwner")
+    @OneToMany(mappedBy = "gameOwner", fetch = FetchType.EAGER)
     private List<VideoGamePOJO> gameList = new ArrayList<>();
 //    @JsonView(JSONViews.OfferView.class)
     @JsonIgnore

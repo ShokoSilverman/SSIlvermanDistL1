@@ -16,7 +16,7 @@ import java.util.List;
 
 @Data
 @Entity
-public class Offers extends RepresentationModel<UserPOJO> {
+public class Offers extends RepresentationModel<Offers> {
     public enum CurrentState{Pending, Accepted, Rejected}
 
     @JsonView(JSONViews.OfferView.class)

@@ -416,7 +416,7 @@ public class UserAPI {
             throw new NullPointerException("User does not have that game!");
         }
         System.err.println("user has the game!");
-        VideoGamePOJO userGame = vidRepo.getFirstById(gameId);
+        VideoGamePOJO userGame = vidRepo.findById(gameId).get();
         try{
             if (!Objects.isNull(game.getName())) userGame.setName(game.getName());
             System.err.println("set name");
