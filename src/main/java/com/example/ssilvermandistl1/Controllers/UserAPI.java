@@ -1,6 +1,5 @@
 package com.example.ssilvermandistl1.Controllers;
 
-import com.example.ssilvermandistl1.Models.Email.SendMail;
 import com.example.ssilvermandistl1.Models.Offers;
 import com.example.ssilvermandistl1.Models.UserPOJO;
 import com.example.ssilvermandistl1.Models.VideoGamePOJO;
@@ -165,10 +164,18 @@ public class UserAPI {
         UserPOJO curUser = userRepo.getByEmail(decodeAuth(authorizationHeader)[0]);
         if (!Objects.isNull(userIn.getName())) curUser.setName(userIn.getName());
         if (!Objects.isNull(userIn.getStreetAddress())) curUser.setStreetAddress(userIn.getStreetAddress());
-        if (!Objects.isNull(userIn.getPassword())) curUser.setPassword(userIn.getPassword());
+        if (!Objects.isNull(userIn.getPassword())) {
+            curUser.setPassword(userIn.getPassword());
+            bll.sendEmail(String.format("Your password has been changed to: %s", curUser.getPassword()), curUser.getEmail(), "Simon's API: Password Reset");
+        }
         for (Link link : generateUserLinks(curUser.getId())) {
             curUser.add(link); //puts all the generated links into the user
         }
+        userRepo.save(curUser);
+        UserDetails updUser = User.withUsername(curUser.getEmail())
+                .password(pswdEnc.encode(curUser.getPassword()))
+                .roles("USER").build();
+        udm.updateUser(updUser);//update the user to match the new password
         return curUser;
     }
 
@@ -178,7 +185,7 @@ public class UserAPI {
         String tempNums = "1234567890";
         String tempLowLetters = "qwertyuiopasdfghjklmnbvcxz";
         String tempUpLetters = "QWERTYUIOPASDFGHJKLZXCVBNM";
-        String tempChars = "!@#$%^&*()[]{};:'<>,.\\/?";
+        String tempChars = "!#$%^&*<>.?";
 
         StringBuilder tempPassword = new StringBuilder();
         Random rand = new Random();
@@ -200,11 +207,10 @@ public class UserAPI {
                 .password(pswdEnc.encode(currentUser.getPassword()))
                 .roles("USER").build();
         udm.updateUser(updUser);//update the user to match the new password
-        new SendMail(email, "Recovery Password", "Here is your temporary password: " + currentUser.getPassword());
+        bll.sendEmail(String.format("Here is your recovery password %s", currentUser.getPassword()), email, "Simon's API: Password Reset");
+//        new SendMail(email, "Recovery Password", "Here is your temporary password: " + currentUser.getPassword());
         return String.format("A recovery password has been sent to %s \nMake sure to check your junk/spam folder if you do not see the email", currentUser.getEmail());
     }
-
-    //create CUD endpoints for videogame creation that link it to the user and check that the user owns it for update
 
     @Transactional
     @PostMapping(path = "/userVer/addGame")
@@ -219,185 +225,6 @@ public class UserAPI {
         }
         return game;
     }
-
-
-
-    @PatchMapping(path = "/userVer/updateGameName")
-    public VideoGamePOJO updateGameName(@RequestParam String strGameId, @RequestParam String newName, HttpServletResponse res, @RequestHeader(value = "Authorization") String authorizationHeader) {
-        int gameId;
-        try {
-            gameId = Integer.parseInt(strGameId);
-        } catch (NumberFormatException nfe) {
-            throw new NumberFormatException("A number must be entered!");
-        }
-        Optional<VideoGamePOJO> optGame = vidRepo.findById(gameId);
-        if (optGame.isEmpty()) {
-            throw new NullPointerException("game with that id does not exist");
-        }
-        VideoGamePOJO game = optGame.get();
-        UserPOJO userPOJO = userRepo.getByEmail(decodeAuth(authorizationHeader)[0]);
-        if (userPOJO.getGameList().contains(game)) {
-            game.setName(newName);
-            vidRepo.save(game);
-        } else {
-            throw new IllegalArgumentException("User does not have that game!");
-        }
-        for (Link link : generateGameLinks(game.getId())) {
-            game.add(link); //puts all the generated links into the game
-        }
-        return game;
-
-    }
-
-    @PatchMapping(path = "/userVer/updateGamePublisher")
-    public VideoGamePOJO updateGamePublisher(@RequestParam String strGameId, @RequestParam String updPublisher, HttpServletResponse res, @RequestHeader(value = "Authorization") String authorizationHeader) {
-        int gameId;
-        try {
-            gameId = Integer.parseInt(strGameId);
-        } catch (NumberFormatException nfe) {
-            throw new NumberFormatException("A number must be entered!");
-        }
-        Optional<VideoGamePOJO> optGame = vidRepo.findById(gameId);
-        if (optGame.isEmpty()) {
-            throw new NullPointerException("A game with that Id does nto exist!");
-        }
-        VideoGamePOJO game = optGame.get();
-        UserPOJO userPOJO = userRepo.getByEmail(decodeAuth(authorizationHeader)[0]);
-        if (userPOJO.getGameList().contains(game)) {
-            game.setPublisher(updPublisher);
-            vidRepo.save(game);
-        } else {
-            throw new IllegalArgumentException("User does not have that game!");
-        }
-        for (Link link : generateGameLinks(game.getId())) {
-            game.add(link); //puts all the generated links into the game
-        }
-        return game;
-
-    }
-
-    @PatchMapping(path = "/userVer/updateGameYear")
-    public VideoGamePOJO updateGameYear(@RequestParam String strGameId, @RequestParam String updYear, HttpServletResponse res, @RequestHeader(value = "Authorization") String authorizationHeader) {
-        int gameId;
-        int gameYear;
-        try {
-            gameId = Integer.parseInt(strGameId);
-            gameYear = Integer.parseInt(updYear);
-        } catch (NumberFormatException nfe) {
-            throw new NumberFormatException("A number must be entered!");
-        }
-        Optional<VideoGamePOJO> optGame = vidRepo.findById(gameId);
-        if (optGame.isEmpty()) {
-            throw new NullPointerException("Game with that Id does not exist!");
-        }
-        VideoGamePOJO game = optGame.get();
-        UserPOJO userPOJO = userRepo.getByEmail(decodeAuth(authorizationHeader)[0]);
-        if (userPOJO.getGameList().contains(game)) {
-            game.setYearPublished(gameYear);
-            vidRepo.save(game);
-        } else {
-            throw new IllegalArgumentException("User does not have that game!");
-        }
-        for (Link link : generateGameLinks(game.getId())) {
-            game.add(link); //puts all the generated links into the game
-        }
-        return game;
-
-    }
-
-    @PatchMapping(path = "/userVer/updateGameSystem")
-    public VideoGamePOJO updateGameSystem(@RequestParam String strGameId, @RequestParam String updSystem, HttpServletResponse res, @RequestHeader(value = "Authorization") String authorizationHeader) {
-        int gameId;
-        try {
-            gameId = Integer.parseInt(strGameId);
-        } catch (NumberFormatException nfe) {
-            throw new NumberFormatException("A number must be entered!");
-        }
-        Optional<VideoGamePOJO> optGame = vidRepo.findById(gameId);
-        if (optGame.isEmpty()) {
-            throw new NullPointerException("Game with that Id does not exist!");
-        }
-        VideoGamePOJO game = optGame.get();
-        UserPOJO userPOJO = userRepo.getByEmail(decodeAuth(authorizationHeader)[0]);
-        if (userPOJO.getGameList().contains(game)) {
-            game.setSystemUsed(updSystem);
-            vidRepo.save(game);
-        } else {
-            throw new IllegalArgumentException("User does not have that game!");
-        }
-        for (Link link : generateGameLinks(game.getId())) {
-            game.add(link); //puts all the generated links into the game
-        }
-        return game;
-
-    }
-
-    @PatchMapping(path = "/userVer/updateGameCondition")
-    public VideoGamePOJO updateGameCondition(@RequestParam String strGameId, @RequestParam String updCondition, HttpServletResponse res, @RequestHeader(value = "Authorization") String authorizationHeader) {
-        int gameId;
-        try {
-            gameId = Integer.parseInt(strGameId);
-        } catch (NumberFormatException nfe) {
-            throw new NumberFormatException("A number must be entered!");
-        }
-        Optional<VideoGamePOJO> optGame = vidRepo.findById(gameId);
-        if (optGame.isEmpty()) {
-            throw new NullPointerException("game with that id does not exist!");
-        }
-        VideoGamePOJO game = optGame.get();
-        UserPOJO userPOJO = userRepo.getByEmail(decodeAuth(authorizationHeader)[0]);
-        try {
-            if (userPOJO.getGameList().contains(game)) {
-                game.setGameCondition(VideoGamePOJO.GameCondition.valueOf(updCondition.toUpperCase(Locale.ROOT)));
-                vidRepo.save(game);
-            } else {
-                throw new IllegalArgumentException("User does not have that game!");
-            }
-        } catch (Exception e) {
-            throw new IllegalArgumentException("That condition does not exist!");
-        }
-        for (Link link : generateGameLinks(game.getId())) {
-            game.add(link); //puts all the generated links into the game
-        }
-        return game;
-
-    }
-
-    @PatchMapping(path = "/userVer/updateGamePrevOwners")
-    public VideoGamePOJO updateGamePrevOwners(@RequestParam String strGameId, @RequestParam String updPrevOwner, HttpServletResponse res, @RequestHeader(value = "Authorization") String authorizationHeader) {
-        int gameId;
-        int prevOwnerNum;
-        try {
-            gameId = Integer.parseInt(strGameId);
-            prevOwnerNum = Integer.parseInt(updPrevOwner);
-        } catch (NumberFormatException nfe) {
-            throw new NumberFormatException("A number must be entered!");
-        }
-        Optional<VideoGamePOJO> optGame = vidRepo.findById(gameId);
-        if (optGame.isEmpty()) {
-            throw new NullPointerException("Game with that id does not exist!");
-        }
-        VideoGamePOJO game = optGame.get();
-        UserPOJO userPOJO = userRepo.getByEmail(decodeAuth(authorizationHeader)[0]);
-        if (userPOJO.getGameList().contains(game)) {
-            game.setPreviousOwners(prevOwnerNum);
-            vidRepo.save(game);
-        } else {
-            throw new IllegalArgumentException("User does not have that game!");
-        }
-        for (Link link : generateGameLinks(game.getId())) {
-            game.add(link); //puts all the generated links into the game
-        }
-        return game;
-
-    }
-
-    //    "name": "Mario",
-//            "publisher": "Nintendo",
-//            "yearPublished": 1993,
-//            "systemUsed": "MS-DOS",
-//            "gameCondition": "MINT",
-//            "previousOwners": 80,
 
 
     @PatchMapping(path="/userVer/updateGame")
@@ -507,6 +334,8 @@ public class UserAPI {
         userRepo.save(offerUser);
         receiveUser.addOfferIn(offer);
         userRepo.save(receiveUser);
+        bll.sendEmail("You made an offer!", offerUser.getEmail(), "Simon's API: You made an offer");
+        bll.sendEmail("You received an offer!", receiveUser.getEmail(), "Simon's API: You received an offer");
         //add links
         for (Link link : generateOfferLinks(offer.getId(), offerUser.getId(), receiveUser.getId(), intOffersList, intReceiveList)) {
             offer.add(link); //puts all the generated links into the game
@@ -579,6 +408,8 @@ public class UserAPI {
         userRepo.save(receiveUser);
         userRepo.save(offerUser);
         offerRepo.save(offer);
+        bll.sendEmail("Your offer has been accepted!", offerUser.getEmail(), "Simon's API: Offer Update");
+        bll.sendEmail("You accepted an offer!", receiveUser.getEmail(), "Simon's API: Accepted Offer");
         //add links
         for (Link link : generateUserLinks(receiveUser.getId())) {
             receiveUser.add(link); //puts all the generated links into the user
@@ -611,6 +442,8 @@ public class UserAPI {
         for (Link link : generateOfferLinksWithGameList(offer.getId(), offer.getOfferingUser().getId(), offer.getReceivingUser().getId(), offer.getOfferedVideoGames(), offer.getRequestedVideoGames())) {
             offer.add(link); //puts all the generated links into the game
         }
+        bll.sendEmail("Your offer has been declined!", offer.getOfferingUser().getEmail(), "Simon's API: Offer Update");
+        bll.sendEmail("You declined an offer!", offer.getReceivingUser().getEmail(), "Simon's API: Declined offer");
         return offer;
     }
 

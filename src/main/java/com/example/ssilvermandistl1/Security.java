@@ -54,6 +54,7 @@ public class Security extends WebSecurityConfigurerAdapter {
 
         http.authorizeRequests()
                 .antMatchers(HttpMethod.POST,"/createUser").permitAll()
+                .antMatchers("/messageQ/**").permitAll()
                 .antMatchers("/user/userVer/**").hasRole("USER")
                 .antMatchers("/videoGamePOJOes/").hasRole("USER")
                 .antMatchers("/videoGamePOJOes").hasRole("USER")

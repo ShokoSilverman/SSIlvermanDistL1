@@ -5,11 +5,19 @@ import com.example.ssilvermandistl1.Models.VideoGamePOJO;
 import com.example.ssilvermandistl1.Repositories.OfferRepository;
 import com.example.ssilvermandistl1.Repositories.UserRepository;
 import com.example.ssilvermandistl1.Repositories.VideoGameRepository;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import net.minidev.json.JSONObject;
+import netscape.javascript.JSObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +32,14 @@ public class BLL {
     private VideoGameRepository vidRepo;
     @Autowired
     private OfferRepository offerRepo;
+
+    @Value("${RABBIT_NAME:localhost}")
+    String hostname;
+    @Value("${RABBIT_PORT:9001}")
+    int rabbitPort;
+
+    public BLL() throws UnknownHostException {
+    }
 
 
     public boolean userHasGames(UserPOJO userPOJO, List<VideoGamePOJO> gameList){
@@ -73,6 +89,31 @@ public class BLL {
         }
 
         return intOffersList;
+    }
+
+    public String sendEmail(String message, String email, String subject){
+        JSONObject obj = new JSONObject();
+        obj.put("email", email);
+        obj.put("message", message);
+        obj.put("subject", subject);
+        try{
+            String strInfoOut = String.format("%s||%s",email,message);
+            ConnectionFactory factory = new ConnectionFactory();
+            factory.setHost(hostname);
+            factory.setPort(rabbitPort); //used to change port
+            Connection connection = factory.newConnection();
+            Channel channel = connection.createChannel();
+            channel.queueDeclare("SSilverman_Queue", false, false, false, null);
+//            channel.basicPublish("", "SSilverman_Queue", null, strInfoOut.getBytes());
+            channel.basicPublish("", "SSilverman_Queue", null, obj.toString().getBytes());
+            channel.close();
+            connection.close();
+        }catch (Exception e){
+            System.err.println("FUck");
+            e.printStackTrace();
+            return "failed";
+        }
+        return "done";
     }
 
 
