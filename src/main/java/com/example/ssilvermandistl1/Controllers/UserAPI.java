@@ -57,6 +57,7 @@ public class UserAPI {
         if (userRepo.getFirstByEmail(testUser.getEmail()).isPresent()) {
             throw new KeyAlreadyExistsException("A user with that email already exists!");
         }
+        testUser.setPassword(pswdEnc.encode(testUser.getPassword()));
         userRepo.save(testUser);
 //        UserDetails newUser = User.withUsername(testUser.getEmail())
 //                .password(pswdEnc.encode(testUser.getPassword()))
@@ -165,7 +166,7 @@ public class UserAPI {
         if (!Objects.isNull(userIn.getName())) curUser.setName(userIn.getName());
         if (!Objects.isNull(userIn.getStreetAddress())) curUser.setStreetAddress(userIn.getStreetAddress());
         if (!Objects.isNull(userIn.getPassword())) {
-            curUser.setPassword(userIn.getPassword());
+            curUser.setPassword(pswdEnc.encode(userIn.getPassword()));
             bll.sendEmail(String.format("Your password has been changed to: %s", curUser.getPassword()), curUser.getEmail(), "Simon's API: Password Reset");
         }
         for (Link link : generateUserLinks(curUser.getId())) {

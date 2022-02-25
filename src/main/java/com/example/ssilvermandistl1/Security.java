@@ -68,7 +68,7 @@ public class Security extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE,"/videoGamePOJOes").hasAuthority("ADMIN")
                 .antMatchers(HttpMethod.PATCH, "/userPOJOes/**").hasAuthority("ADMIN") //figure out a way to lock the user editing
                 .antMatchers("/user/forgotPassword").permitAll()
-                .antMatchers("/**").permitAll()
+                .anyRequest().permitAll()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .csrf().disable()
