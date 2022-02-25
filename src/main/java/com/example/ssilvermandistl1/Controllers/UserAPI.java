@@ -58,10 +58,10 @@ public class UserAPI {
             throw new KeyAlreadyExistsException("A user with that email already exists!");
         }
         userRepo.save(testUser);
-        UserDetails newUser = User.withUsername(testUser.getEmail())
-                .password(pswdEnc.encode(testUser.getPassword()))
-                .roles("USER").build();
-        udm.createUser(newUser);
+//        UserDetails newUser = User.withUsername(testUser.getEmail())
+//                .password(pswdEnc.encode(testUser.getPassword()))
+//                .roles("USER").build();
+//        udm.createUser(newUser);
         for (Link link : generateUserLinks(testUser.getId())) {
             testUser.add(link); //puts all the generated links into the user
         }
@@ -172,10 +172,10 @@ public class UserAPI {
             curUser.add(link); //puts all the generated links into the user
         }
         userRepo.save(curUser);
-        UserDetails updUser = User.withUsername(curUser.getEmail())
-                .password(pswdEnc.encode(curUser.getPassword()))
-                .roles("USER").build();
-        udm.updateUser(updUser);//update the user to match the new password
+//        UserDetails updUser = User.withUsername(curUser.getEmail())
+//                .password(pswdEnc.encode(curUser.getPassword()))
+//                .roles("USER").build();
+//        udm.updateUser(updUser);//update the user to match the new password
         return curUser;
     }
 
@@ -203,10 +203,11 @@ public class UserAPI {
         UserPOJO currentUser = optUser.get();
         currentUser.setPassword(tempPassword.toString());
         userRepo.save(currentUser);
-        UserDetails updUser = User.withUsername(currentUser.getEmail())
-                .password(pswdEnc.encode(currentUser.getPassword()))
-                .roles("USER").build();
-        udm.updateUser(updUser);//update the user to match the new password
+//        UserDetails updUser = udm.loadUserByUsername(currentUser.getEmail());
+//        UserDetails updUser = User.withUsername(currentUser.getEmail())
+//                .password(pswdEnc.encode(currentUser.getPassword()))
+//                .roles("USER").build();
+//        udm.updateUser(updUser);//update the user to match the new password
         bll.sendEmail(String.format("Here is your recovery password %s", currentUser.getPassword()), email, "Simon's API: Password Reset");
 //        new SendMail(email, "Recovery Password", "Here is your temporary password: " + currentUser.getPassword());
         return String.format("A recovery password has been sent to %s \nMake sure to check your junk/spam folder if you do not see the email", currentUser.getEmail());

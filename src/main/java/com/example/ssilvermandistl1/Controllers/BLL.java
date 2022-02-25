@@ -35,7 +35,7 @@ public class BLL {
 
     @Value("${RABBIT_NAME:localhost}")
     String hostname;
-    @Value("${RABBIT_PORT:9001}")
+    @Value("${RABBIT_PORT:5672}")
     int rabbitPort;
 
     public BLL() throws UnknownHostException {
@@ -97,7 +97,7 @@ public class BLL {
         obj.put("message", message);
         obj.put("subject", subject);
         try{
-            String strInfoOut = String.format("%s||%s",email,message);
+//            String strInfoOut = String.format("%s||%s",email,message);
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(hostname);
             factory.setPort(rabbitPort); //used to change port

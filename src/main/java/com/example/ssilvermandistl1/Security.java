@@ -29,21 +29,26 @@ public class Security extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 
-        System.out.println("configure - A");
-        UserDetails newUser = User.withUsername("user")
-                .password(passEncode().encode("asdf"))
-                .roles("USER").build();
-        memAuth.createUser(newUser);
-
-        ArrayList<UserPOJO> userList = (ArrayList<UserPOJO>) userRepo.findAll();
-        for(UserPOJO user : userList){
-            UserDetails newUserAdd = User.withUsername(user.getEmail())
-                    .password(passEncode().encode(user.getPassword()))
-                    .roles("USER").build();
-            memAuth.createUser(newUserAdd);
-        }
-
-        auth.userDetailsService(memAuth);
+//        System.out.println("configure - A");
+//        UserDetails newUser = User.withUsername("user")
+//                .password(passEncode().encode("asdf"))
+//                .roles("USER").build();
+//        memAuth.createUser(newUser);
+//
+//        ArrayList<UserPOJO> userList = (ArrayList<UserPOJO>) userRepo.findAll();
+//        for(UserPOJO user : userList){
+//            UserDetails newUserAdd = User.withUsername(user.getEmail())
+//                    .password(passEncode().encode(user.getPassword()))
+//                    .roles("USER").build();
+//            memAuth.createUser(newUserAdd);
+//        }
+//
+//        auth.userDetailsService(memAuth);
+        UserDetails newAdmin = User.withUsername("admin")
+                .password(passEncode().encode("passWord"))
+                .roles("ADMIN").build();
+        auth.inMemoryAuthentication().withUser(newAdmin);
+        auth.userDetailsService(getUserDetailsService());
 
     }
     // ///////////////////////////////////////////
@@ -55,14 +60,15 @@ public class Security extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers(HttpMethod.POST,"/createUser").permitAll()
                 .antMatchers("/messageQ/**").permitAll()
-                .antMatchers("/user/userVer/**").hasRole("USER")
-                .antMatchers("/videoGamePOJOes/").hasRole("USER")
-                .antMatchers("/videoGamePOJOes").hasRole("USER")
-                .antMatchers(HttpMethod.PATCH,"/videoGamePOJOes").hasRole("ADMIN")
-                .antMatchers(HttpMethod.POST,"/videoGamePOJOes").hasRole("ADMIN")
-                .antMatchers(HttpMethod.DELETE,"/videoGamePOJOes").hasRole("ADMIN")
-                .antMatchers(HttpMethod.PATCH, "/userPOJOes/**").hasRole("ADMIN") //figure out a way to lock the user editing
-                .antMatchers("/").permitAll()
+                .antMatchers("/user/userVer/**").hasAuthority("USER")
+                .antMatchers("/videoGamePOJOes/").hasAuthority("USER")
+                .antMatchers("/videoGamePOJOes").hasAuthority("USER")
+                .antMatchers(HttpMethod.PATCH,"/videoGamePOJOes").hasAuthority("ADMIN")
+                .antMatchers(HttpMethod.POST,"/videoGamePOJOes").hasAuthority("ADMIN")
+                .antMatchers(HttpMethod.DELETE,"/videoGamePOJOes").hasAuthority("ADMIN")
+                .antMatchers(HttpMethod.PATCH, "/userPOJOes/**").hasAuthority("ADMIN") //figure out a way to lock the user editing
+                .antMatchers("/user/forgotPassword").permitAll()
+                .antMatchers("/**").permitAll()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .csrf().disable()
@@ -81,6 +87,10 @@ public class Security extends WebSecurityConfigurerAdapter {
     public InMemoryUserDetailsManager getInMemoryUserDetailsManager(){
         System.out.println("*** Enter getInMemoryUserDetailsManager(");
         return memAuth;
+    }
+    @Bean
+    public UserDetailsService getUserDetailsService(){
+        return (email) -> userRepo.findFirstByEmail(email);
     }
 
 

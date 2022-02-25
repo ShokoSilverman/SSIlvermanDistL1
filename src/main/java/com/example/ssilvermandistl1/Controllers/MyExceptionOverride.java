@@ -17,6 +17,7 @@ public class MyExceptionOverride extends ResponseEntityExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public final ResponseEntity<MyExceptionMessage> somethingWentWrong(IllegalArgumentException ex){
         System.out.println("somethingWentWrong()");
+        ex.printStackTrace();
         MyExceptionMessage myEx = new MyExceptionMessage(ex.getMessage(), 400);
         return new ResponseEntity<MyExceptionMessage>(myEx, new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
