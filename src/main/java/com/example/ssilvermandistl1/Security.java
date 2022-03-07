@@ -24,6 +24,7 @@ public class Security extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private UserRepository userRepo;
+    
     static InMemoryUserDetailsManager memAuth = new InMemoryUserDetailsManager();
 
     @Override

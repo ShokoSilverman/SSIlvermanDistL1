@@ -202,14 +202,14 @@ public class UserAPI {
             throw new NullPointerException("Name or Email does not exist");
         }
         UserPOJO currentUser = optUser.get();
-        currentUser.setPassword(tempPassword.toString());
+        currentUser.setPassword(pswdEnc.encode(tempPassword));
         userRepo.save(currentUser);
 //        UserDetails updUser = udm.loadUserByUsername(currentUser.getEmail());
 //        UserDetails updUser = User.withUsername(currentUser.getEmail())
 //                .password(pswdEnc.encode(currentUser.getPassword()))
 //                .roles("USER").build();
 //        udm.updateUser(updUser);//update the user to match the new password
-        bll.sendEmail(String.format("Here is your recovery password %s", currentUser.getPassword()), email, "Simon's API: Password Reset");
+        bll.sendEmail(String.format("Here is your recovery password %s", tempPassword), email, "Simon's API: Password Reset");
 //        new SendMail(email, "Recovery Password", "Here is your temporary password: " + currentUser.getPassword());
         return String.format("A recovery password has been sent to %s \nMake sure to check your junk/spam folder if you do not see the email", currentUser.getEmail());
     }
